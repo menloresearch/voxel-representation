@@ -1,0 +1,7 @@
+max_obj_num: 10
+modelnet_path: "<full path to modelnet dataset>/ModelNet40"
+save_path: "<path to save generated dataset>"
+num_examples: 20000
+split: "train"
+skip_3d_image_gen: true
+skip_3d_html_gen: true
