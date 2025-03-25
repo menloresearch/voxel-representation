@@ -1,5 +1,7 @@
 # Voxel Representation Model
 
+![Demo](result.gif)
+
 ## Installation
 ```
 conda create -y --prefix $(pwd)/.conda python=3.10
