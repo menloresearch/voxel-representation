@@ -280,6 +280,7 @@ def load_mesh(voxel_grid: torch.Tensor, split: Split, example_id: int, cfg: Data
             "z": int(center[2])   # height
         }
     
+    # TODO: Convert center coordinates to bbox dataset in the future experiments
     # Calculate bounding box for each object
     # for obj in result["objects"]:
     #     voxels = obj["voxel_coords"]
