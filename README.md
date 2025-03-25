@@ -20,6 +20,13 @@ cd ..
 pip install deepspeed liger-kernel
 ``` 
 
+### Download Test set
+```
+git clone https://huggingface.co/datasets/homebrewltd/voxel-representation downloaded_dataset
+cp -r downloaded_dataset/test output/test 
+cp -r downloaded_dataset/test_100 output/test_100
+```
+
 ## Getting Started
 
 ### Run Inference for 100 examples
