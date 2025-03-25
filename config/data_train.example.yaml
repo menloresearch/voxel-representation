@@ -6,4 +6,4 @@ split: "train"
 skip_3d_image_gen: true
 skip_3d_html_gen: true
 skip_voxel_torch_save: true
-scale_factors: [2] # currently tested with 1,2
+# scale_factors: [2] # currently tested with 1,2

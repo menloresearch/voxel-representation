@@ -337,8 +337,7 @@ def generate_examples(cfg: DataGenerationConfig, split: Split = 'train'):
     os.makedirs(os.path.join(cfg.save_path, IMAGE_3D_HTML_FOLDER_NAME), exist_ok=False)
     os.makedirs(os.path.join(cfg.save_path, IMAGE_3D_FOLDER_NAME), exist_ok=False)
     
-    for scale_factor in cfg.scale_factors:
-        os.makedirs(os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME.format(scale_factor=scale_factor)), exist_ok=False)
+    os.makedirs(os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME), exist_ok=False)
     
     os.makedirs(os.path.join(cfg.save_path, VOXEL_FOLDER_NAME), exist_ok=False)
     

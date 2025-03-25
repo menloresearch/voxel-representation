@@ -39,7 +39,7 @@ SELECTED_OBJ_CATEGORIES = [
 
 Split = Literal['train', 'test']
 
-IMAGE_2D_FOLDER_NAME = 'image2d_{scale_factor}'
+IMAGE_2D_FOLDER_NAME = 'image2d'
 IMAGE_3D_FOLDER_NAME = 'image3d'
 IMAGE_3D_HTML_FOLDER_NAME = 'html_obj_3d'
 VOXEL_FOLDER_NAME = 'voxel_torch'

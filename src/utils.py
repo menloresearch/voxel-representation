@@ -90,13 +90,13 @@ def visualize_voxel_grid(voxel_grid: torch.Tensor, example_id: int, cfg: DataGen
     plt.savefig(save_path_img)
 
 def save_2d_image(voxel_grid: torch.Tensor, example_id: int, cfg: DataGenerationConfig):
-    for scale_factor in cfg.scale_factors:
-        image = convert_voxel_to_2d_scan_image(voxel_grid, scale_factor)
+    SCALE_FACTOR = 2
+    image = (voxel_grid, SCALE_FACTOR)
 
-        # Convert to NumPy and ensure it's in the correct format
-        image_np = image.numpy()  # Convert to NumPy
-        save_path_img = os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME.format(scale_factor=scale_factor), SAVE_2D_IMAGE_NAME.format(example_id=example_id))
-        Image.fromarray(np.uint8(image_np)).save(save_path_img)
+    # Convert to NumPy and ensure it's in the correct format
+    image_np = image.numpy()  # Convert to NumPy
+    save_path_img = os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME, SAVE_2D_IMAGE_NAME.format(example_id=example_id))
+    Image.fromarray(np.uinconvert_voxel_to_2d_scan_imaget8(image_np)).save(save_path_img)
 
 
 def save_voxel_grid(voxel_grid: torch.Tensor, example_id: int, cfg: DataGenerationConfig):
