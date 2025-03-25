@@ -12,9 +12,9 @@ conda install -y -c conda-forge libstdcxx-ng
 
 ### For Training
 ```
-git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git
+git clone https://github.com/hiyouga/LLaMA-Factory.git
 cd LLaMA-Factory
-git checkout 59a56f7226f24b3b8c37b6a4da0a5802b4022ead
+git checkout 42e090d38b986bbf989055851209f91565b69e89
 pip install -e ".[torch,metrics]"
 cd ..
 pip install deepspeed liger-kernel

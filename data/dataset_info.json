@@ -1,0 +1,11 @@
+{
+    "voxel2d_to_coordinates": {
+      "file_name": "data.json",
+      "columns": {
+        "prompt": "instruction",
+        "query": "input",
+        "response": "output",
+        "images": "images"
+      }
+    }
+}
