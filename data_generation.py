@@ -13,8 +13,8 @@ from omegaconf import OmegaConf
 import logging
 
 from src.config import DataGenerationConfig
-from src.constants import COLOR_MAP, IMAGE_2D_FOLDER_NAME, IMAGE_3D_FOLDER_NAME, IMAGE_3D_HTML_FOLDER_NAME, SAVE_2D_IMAGE_NAME, SAVE_3D_HTML_NAME, SAVE_3D_IMAGE_NAME, SELECTED_OBJ_CATEGORIES, Split
-from src.utils import init_voxel, save_2d_image, visualize_voxel_grid
+from src.constants import COLOR_MAP, IMAGE_2D_FOLDER_NAME, IMAGE_3D_FOLDER_NAME, IMAGE_3D_HTML_FOLDER_NAME, SAVE_2D_IMAGE_NAME, SAVE_3D_HTML_NAME, SAVE_3D_IMAGE_NAME, SELECTED_OBJ_CATEGORIES, VOXEL_FOLDER_NAME, Split
+from src.utils import init_voxel, save_2d_image, save_voxel_grid, visualize_voxel_grid
 
 
 def load_mesh(voxel_grid: torch.Tensor, split: Split, example_id: int, cfg: DataGenerationConfig):
@@ -280,6 +280,26 @@ def load_mesh(voxel_grid: torch.Tensor, split: Split, example_id: int, cfg: Data
             "z": int(center[2])   # height
         }
     
+    # Calculate bounding box for each object
+    # for obj in result["objects"]:
+    #     voxels = obj["voxel_coords"]
+    #     # Convert to numpy array for calculations
+    #     voxel_array = np.array(voxels)
+        
+    #     min_coords = np.min(voxel_array, axis=0)
+    #     max_coords = np.max(voxel_array, axis=0)
+        
+    #     # Store bounding box in the desired format
+    #     obj["voxel_bbox"] = {
+    #         "x": int(min_coords[0]),  # width
+    #         "y": int(min_coords[1]),  # depth
+    #         "z": int(min_coords[2]),   # height
+    #         "x_width": int(max_coords[0] - min_coords[0]),  # width
+    #         "y_depth": int(max_coords[1] - min_coords[1]),  # depth
+    #         "z_height": int(max_coords[2] - min_coords[2])   # height
+    #     }
+        
+        # Remove the original voxel coordinates to save space
         del obj["voxel_coords"]
     
     print(f"""Filled voxel grid with matrix of shape {
@@ -292,21 +312,21 @@ def load_mesh(voxel_grid: torch.Tensor, split: Split, example_id: int, cfg: Data
 
 
 def generate_one_example(split: Split, example_id: int, cfg: DataGenerationConfig):
-    try:
-        voxel_grid = init_voxel()
-        result = load_mesh(voxel_grid, split, example_id, cfg)
-        
-        print(f"Example {example_id}: {result}")
+    voxel_grid = init_voxel()
+    result = load_mesh(voxel_grid, split, example_id, cfg)
+    
+    print(f"Example {example_id}: {result}")
 
-        if not cfg.skip_3d_image_gen:
-            visualize_voxel_grid(voxel_grid,  example_id, cfg)
-        
-        save_2d_image(voxel_grid, example_id, cfg)
-        
-        with open(os.path.join(cfg.save_path, 'labels.jsonl'), 'a') as f:
-            f.write(json.dumps(result) + '\n')
-    except Exception as e:
-        logging.error(f"An error occurred {e}", exc_info=True)
+    if not cfg.skip_3d_image_gen:
+        visualize_voxel_grid(voxel_grid,  example_id, cfg)
+    
+    if not cfg.skip_voxel_torch_save:
+        save_voxel_grid(voxel_grid, example_id, cfg)
+    
+    save_2d_image(voxel_grid, example_id, cfg)
+    
+    with open(os.path.join(cfg.save_path, 'labels.jsonl'), 'a') as f:
+        f.write(json.dumps(result) + '\n')
 
 def generate_examples(cfg: DataGenerationConfig, split: Split = 'train'):
     """Generate multiple examples with a progress bar"""
@@ -315,7 +335,11 @@ def generate_examples(cfg: DataGenerationConfig, split: Split = 'train'):
 
     os.makedirs(os.path.join(cfg.save_path, IMAGE_3D_HTML_FOLDER_NAME), exist_ok=False)
     os.makedirs(os.path.join(cfg.save_path, IMAGE_3D_FOLDER_NAME), exist_ok=False)
-    os.makedirs(os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME), exist_ok=False)
+    
+    for scale_factor in cfg.scale_factors:
+        os.makedirs(os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME.format(scale_factor=scale_factor)), exist_ok=False)
+    
+    os.makedirs(os.path.join(cfg.save_path, VOXEL_FOLDER_NAME), exist_ok=False)
     
     for example_id in tqdm(range(cfg.num_examples), desc=f"Generating {split} examples"):
         generate_one_example(split, example_id, cfg)

@@ -7,26 +7,28 @@ import matplotlib.pyplot as plt
 import os
 
 from src.config import DataGenerationConfig
-from src.constants import IMAGE_2D_FOLDER_NAME, IMAGE_3D_FOLDER_NAME, SAVE_3D_IMAGE_NAME, SAVE_2D_IMAGE_NAME
+from src.constants import IMAGE_2D_FOLDER_NAME, IMAGE_3D_FOLDER_NAME, SAVE_3D_IMAGE_NAME, SAVE_2D_IMAGE_NAME, SAVE_VOXEL_NAME, VOXEL_FOLDER_NAME
 from PIL import Image
 
 def init_voxel():
     # Create an empty voxel grid with RGB channels (height, width, depth, 3)
     # The 3 channels are: R, G, B using 0-255 range
-    voxel_grid = torch.zeros((16, 100, 100, 3), dtype=torch.uint8)
+    voxel_grid = torch.zeros((64, 100, 100, 3), dtype=torch.uint8)
     return voxel_grid
 
-def convert_voxel_to_2d_scan_image(voxel_grid: torch.Tensor):
+def convert_voxel_to_2d_scan_image(voxel_grid: torch.Tensor, scale_factor: int):
     image = torch.zeros((14 * 8 * 8, 14 * 8 * 8, 3), dtype=torch.long)
-    SCALE_FACTOR = 2
     for i in range(len(voxel_grid)):
-        x = (i // (8 // SCALE_FACTOR)) * 14 * 8 * SCALE_FACTOR
-        y = (i % (8 // SCALE_FACTOR)) * 14 * 8 * SCALE_FACTOR
-        
+        if i >= (16 * 4 / (scale_factor ** 2)):
+            break
+
+        x = (i // (8 // scale_factor)) * 14 * 8 * scale_factor
+        y = (i % (8 // scale_factor)) * 14 * 8 * scale_factor
+
         border_value = 255
         border_size = 1
         # patch = image[x+border_size:x+100+border_size, y+border_size:y+100+1]
-        patch_border = image[x:x+14 * 8 * SCALE_FACTOR, y:y+14 * 8 * SCALE_FACTOR]
+        patch_border = image[x:x+14 * 8 * scale_factor, y:y+14 * 8 * scale_factor]
         patch_border[:border_size, :] = border_value  # Top border
         patch_border[-border_size:, :] = border_value  # Bottom border
         patch_border[:, :border_size] = border_value  # Left border
@@ -36,11 +38,11 @@ def convert_voxel_to_2d_scan_image(voxel_grid: torch.Tensor):
         voxel_grid_2d_for_resize = voxel_grid_2d.permute(2, 0, 1).unsqueeze(0)  # Shape becomes [1, 3, 100, 100]
 
         # Resize the voxel_grid_2d
-        resized_voxel_grid_2d = F.interpolate(voxel_grid_2d_for_resize, scale_factor=SCALE_FACTOR, mode='bilinear', align_corners=False)
+        resized_voxel_grid_2d = F.interpolate(voxel_grid_2d_for_resize, scale_factor=scale_factor, mode='bilinear', align_corners=False)
 
         # Convert back to the original format
         resized_voxel_grid_2d = resized_voxel_grid_2d.squeeze(0).permute(1, 2, 0)  # Shape becomes [200, 200, 3]
-        image[x+border_size:x+100 * SCALE_FACTOR+ border_size, y + border_size:y+100 * SCALE_FACTOR+ border_size] = resized_voxel_grid_2d
+        image[x+border_size:x+100 * scale_factor+ border_size, y + border_size:y+100 * scale_factor+ border_size] = resized_voxel_grid_2d
     return image
 
 
@@ -88,9 +90,17 @@ def visualize_voxel_grid(voxel_grid: torch.Tensor, example_id: int, cfg: DataGen
     plt.savefig(save_path_img)
 
 def save_2d_image(voxel_grid: torch.Tensor, example_id: int, cfg: DataGenerationConfig):
-    image = convert_voxel_to_2d_scan_image(voxel_grid)
+    for scale_factor in cfg.scale_factors:
+        image = convert_voxel_to_2d_scan_image(voxel_grid, scale_factor)
 
-    # Convert to NumPy and ensure it's in the correct format
-    image_np = image.numpy()  # Convert to NumPy
-    save_path_img = os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME, SAVE_2D_IMAGE_NAME.format(example_id=example_id))
-    Image.fromarray(np.uint8(image_np)).save(save_path_img)
+        # Convert to NumPy and ensure it's in the correct format
+        image_np = image.numpy()  # Convert to NumPy
+        save_path_img = os.path.join(cfg.save_path, IMAGE_2D_FOLDER_NAME.format(scale_factor=scale_factor), SAVE_2D_IMAGE_NAME.format(example_id=example_id))
+        Image.fromarray(np.uint8(image_np)).save(save_path_img)
+
+
+def save_voxel_grid(voxel_grid: torch.Tensor, example_id: int, cfg: DataGenerationConfig):
+    save_path_voxel = os.path.join(cfg.save_path, VOXEL_FOLDER_NAME, SAVE_VOXEL_NAME.format(example_id=example_id))
+    torch.save(voxel_grid, save_path_voxel)
+
+

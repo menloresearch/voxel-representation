@@ -5,3 +5,5 @@ num_examples: 2000
 split: "test"
 skip_3d_image_gen: false
 skip_3d_html_gen: false
+skip_voxel_torch_save: false
+scale_factors: [2] # currently tested with 1,2
