@@ -33,7 +33,7 @@ def main():
     model = LLM(model=args.checkpoint_path)
     sampling_params = SamplingParams(
         guided_decoding=guided_decoding_params,
-        max_tokens = 2048, 
+        max_tokens=2048, 
         temperature=0.0
     )
     
@@ -48,7 +48,8 @@ def main():
     print(f"Processing {total} images from {input_dir}")
     
     messages_all = []
-    for i, filename in tqdm(enumerate(input_files), total=total):
+    for i in tqdm(range(len(input_files)), total=total):
+        filename = f'{i}.png'
         image_path = os.path.join(input_dir, filename)
         
         # Convert image to base64
